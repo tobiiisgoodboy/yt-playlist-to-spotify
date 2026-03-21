@@ -1,6 +1,5 @@
-import { auth, signIn } from "@/auth";
+import { auth, signIn, signOut } from "@/auth";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { FaYoutube, FaSpotify } from "react-icons/fa";
 
 export default async function Home() {
@@ -9,10 +8,6 @@ export default async function Home() {
 
   const hasGoogle = !!session?.googleAccessToken;
   const hasSpotify = !!cookieStore.get("spotify_access_token");
-
-  if (hasGoogle && hasSpotify) {
-    redirect("/convert");
-  }
 
   return (
     <main className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
@@ -36,7 +31,21 @@ export default async function Home() {
               <FaYoutube className="text-red-500 text-xl" />
               YouTube{hasGoogle ? " — polaczono" : ""}
             </span>
-            {!hasGoogle && (
+            {hasGoogle ? (
+              <form
+                action={async () => {
+                  "use server";
+                  await signOut({ redirectTo: "/" });
+                }}
+              >
+                <button
+                  type="submit"
+                  className="text-gray-500 hover:text-red-400 text-sm px-3 py-1.5 rounded-lg border border-gray-700 hover:border-red-800 transition-colors cursor-pointer"
+                >
+                  Rozłącz
+                </button>
+              </form>
+            ) : (
               <form
                 action={async () => {
                   "use server";
@@ -47,7 +56,7 @@ export default async function Home() {
                   type="submit"
                   className="bg-white text-gray-900 font-semibold px-4 py-2 rounded-lg text-sm hover:bg-gray-100 transition-colors cursor-pointer"
                 >
-                  Polacz
+                  Połącz
                 </button>
               </form>
             )}
@@ -64,12 +73,19 @@ export default async function Home() {
               <FaSpotify className="text-green-500 text-xl" />
               Spotify{hasSpotify ? " — polaczono" : ""}
             </span>
-            {!hasSpotify && (
+            {hasSpotify ? (
+              <a
+                href="/api/spotify/logout"
+                className="text-gray-500 hover:text-red-400 text-sm px-3 py-1.5 rounded-lg border border-gray-700 hover:border-red-800 transition-colors"
+              >
+                Rozłącz
+              </a>
+            ) : (
               <a
                 href="/api/spotify/login"
                 className="bg-green-500 text-black font-semibold px-4 py-2 rounded-lg text-sm hover:bg-green-400 transition-colors"
               >
-                Polacz
+                Połącz
               </a>
             )}
           </div>

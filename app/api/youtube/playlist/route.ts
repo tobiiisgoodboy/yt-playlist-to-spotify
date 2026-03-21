@@ -51,6 +51,9 @@ export async function GET(request: NextRequest) {
 
     if (!res.ok) {
       const err = await res.json();
+      if (res.status === 401) {
+        return NextResponse.json({ error: "Sesja Google wygasła", code: "AUTH_EXPIRED" }, { status: 401 });
+      }
       return NextResponse.json(
         { error: err?.error?.message ?? "YouTube API error" },
         { status: res.status }
