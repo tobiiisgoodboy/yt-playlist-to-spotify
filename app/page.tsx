@@ -1,12 +1,14 @@
 import { auth, signIn } from "@/auth";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { FaYoutube, FaSpotify } from "react-icons/fa";
 
 export default async function Home() {
   const session = await auth();
+  const cookieStore = await cookies();
 
   const hasGoogle = !!session?.googleAccessToken;
-  const hasSpotify = !!session?.spotifyAccessToken;
+  const hasSpotify = !!cookieStore.get("spotify_access_token");
 
   if (hasGoogle && hasSpotify) {
     redirect("/convert");
@@ -63,19 +65,12 @@ export default async function Home() {
               Spotify{hasSpotify ? " — polaczono" : ""}
             </span>
             {!hasSpotify && (
-              <form
-                action={async () => {
-                  "use server";
-                  await signIn("spotify");
-                }}
+              <a
+                href="/api/spotify/login"
+                className="bg-green-500 text-black font-semibold px-4 py-2 rounded-lg text-sm hover:bg-green-400 transition-colors"
               >
-                <button
-                  type="submit"
-                  className="bg-green-500 text-black font-semibold px-4 py-2 rounded-lg text-sm hover:bg-green-400 transition-colors cursor-pointer"
-                >
-                  Polacz
-                </button>
-              </form>
+                Polacz
+              </a>
             )}
           </div>
 
