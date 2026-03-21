@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
     album: { name: string; images: { url: string }[] };
     external_urls: { spotify: string };
     uri: string;
+    preview_url: string | null;
   }) => ({
     id: t.id,
     uri: t.uri,
@@ -58,6 +59,7 @@ export async function GET(request: NextRequest) {
     album: t.album.name,
     image: t.album.images?.[1]?.url ?? t.album.images?.[0]?.url ?? "",
     url: t.external_urls.spotify,
+    previewUrl: t.preview_url ?? null,
   }));
 
   return NextResponse.json({ tracks, query });
