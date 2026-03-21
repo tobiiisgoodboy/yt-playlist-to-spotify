@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import ConvertClient from "./ConvertClient";
 
 export default async function ConvertPage() {
   const session = await auth();
@@ -20,20 +21,7 @@ export default async function ConvertPage() {
         <p className="text-gray-400 mb-8">
           Wklej link do playlisty YouTube, aby znalezc odpowiedniki na Spotify.
         </p>
-
-        <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Link do playlisty YouTube
-          </label>
-          <input
-            type="url"
-            placeholder="https://www.youtube.com/playlist?list=..."
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-green-500 transition-colors"
-          />
-          <button className="mt-4 w-full bg-green-500 text-black font-bold py-3 rounded-xl hover:bg-green-400 transition-colors cursor-pointer">
-            Analizuj playlisty
-          </button>
-        </div>
+        <ConvertClient />
       </div>
     </main>
   );
