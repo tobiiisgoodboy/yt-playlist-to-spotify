@@ -1,5 +1,6 @@
 import { auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
+import { FaYoutube, FaSpotify } from "react-icons/fa";
 
 export default async function Home() {
   const session = await auth();
@@ -29,7 +30,8 @@ export default async function Home() {
                 hasGoogle ? "bg-green-500" : "bg-gray-600"
               }`}
             />
-            <span className="text-gray-300 flex-1">
+            <span className="text-gray-300 flex-1 flex items-center gap-2">
+              <FaYoutube className="text-red-500 text-xl" />
               YouTube{hasGoogle ? " — polaczono" : ""}
             </span>
             {!hasGoogle && (
@@ -56,7 +58,8 @@ export default async function Home() {
                 hasSpotify ? "bg-green-500" : "bg-gray-600"
               }`}
             />
-            <span className="text-gray-300 flex-1">
+            <span className="text-gray-300 flex-1 flex items-center gap-2">
+              <FaSpotify className="text-green-500 text-xl" />
               Spotify{hasSpotify ? " — polaczono" : ""}
             </span>
             {!hasSpotify && (
