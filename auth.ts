@@ -9,7 +9,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       authorization: {
         params: {
           scope:
-            "openid email profile https://www.googleapis.com/auth/youtube.readonly",
+            "openid email profile https://www.googleapis.com/auth/youtube",
         },
       },
     }),
