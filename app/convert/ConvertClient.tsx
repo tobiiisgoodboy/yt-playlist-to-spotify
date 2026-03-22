@@ -136,6 +136,7 @@ export default function ConvertClient() {
   const [showAll, setShowAll] = useState(false);
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
   const [authExpired, setAuthExpired] = useState(false);
+  const [spotifyError, setSpotifyError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Krok 4 state
@@ -248,6 +249,7 @@ export default function ConvertClient() {
     setFilter("all");
     setPage(1);
     setShowAll(false);
+    setSpotifyError(null);
 
     const matched: MatchedItem[] = [];
     for (let i = 0; i < ytItems.length; i++) {
@@ -256,9 +258,27 @@ export default function ConvertClient() {
 
       const spRes = await fetch(`/api/spotify/search?title=${encodeURIComponent(yt.title)}`);
       let spotifyTracks: SpotifyTrack[] = [];
+
       if (spRes.ok) {
         const d = await spRes.json();
         spotifyTracks = d.tracks ?? [];
+      } else if (spRes.status === 429) {
+        setSpotifyError(`Spotify zablokował zapytania (rate limit) po ${i} utworach. Poczekaj chwilę i ponów wyszukiwanie.`);
+        // Save partial results and stop
+        for (let j = i; j < ytItems.length; j++) {
+          matched.push({ ytTitle: ytItems[j].title, ytThumbnail: ytItems[j].thumbnail, videoId: ytItems[j].videoId, spotifyTracks: [], selectedTrack: null });
+        }
+        setItems(matched);
+        setStage("results");
+        return;
+      } else if (spRes.status === 401) {
+        setSpotifyError("Token Spotify wygasł. Rozłącz i połącz Spotify ponownie.");
+        for (let j = i; j < ytItems.length; j++) {
+          matched.push({ ytTitle: ytItems[j].title, ytThumbnail: ytItems[j].thumbnail, videoId: ytItems[j].videoId, spotifyTracks: [], selectedTrack: null });
+        }
+        setItems(matched);
+        setStage("results");
+        return;
       }
 
       matched.push({
@@ -617,6 +637,19 @@ export default function ConvertClient() {
   return (
     <div>
       <StepIndicator stage="results" />
+
+      {/* Spotify error banner */}
+      {spotifyError && (
+        <div className="mb-4 p-4 bg-yellow-900/40 border border-yellow-700 rounded-xl">
+          <p className="text-yellow-300 text-sm mb-3">{spotifyError}</p>
+          <button
+            onClick={handleStartSpotifySearch}
+            className="bg-green-500 text-black font-semibold px-4 py-2 rounded-lg text-sm hover:bg-green-400 transition-colors cursor-pointer"
+          >
+            Ponów wyszukiwanie Spotify
+          </button>
+        </div>
+      )}
 
       {/* Stats + filtry */}
       <div className="grid grid-cols-4 gap-2 mb-4">
