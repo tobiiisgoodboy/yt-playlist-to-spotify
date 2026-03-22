@@ -259,7 +259,7 @@ export default function ConvertClient() {
       setProgress(i + 1);
 
       // Small delay to avoid rate limiting
-      if (i > 0) await delay(120);
+      if (i > 0) await delay(200);
 
       let spRes = await fetch(`/api/spotify/search?title=${encodeURIComponent(yt.title)}`);
 
