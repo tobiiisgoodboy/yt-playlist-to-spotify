@@ -251,20 +251,35 @@ export default function ConvertClient() {
     setShowAll(false);
     setSpotifyError(null);
 
+    const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
     const matched: MatchedItem[] = [];
     for (let i = 0; i < ytItems.length; i++) {
       const yt = ytItems[i];
       setProgress(i + 1);
 
-      const spRes = await fetch(`/api/spotify/search?title=${encodeURIComponent(yt.title)}`);
+      // Small delay to avoid rate limiting
+      if (i > 0) await delay(120);
+
+      let spRes = await fetch(`/api/spotify/search?title=${encodeURIComponent(yt.title)}`);
+
+      // Auto-retry once on 429 after Retry-After seconds
+      if (spRes.status === 429) {
+        const errData = await spRes.json().catch(() => ({}));
+        const waitSec = errData.retryAfter ?? 5;
+        setSpotifyError(`Rate limit Spotify — czekam ${waitSec}s i ponawiam... (${i + 1}/${ytItems.length})`);
+        await delay(waitSec * 1000);
+        setSpotifyError(null);
+        spRes = await fetch(`/api/spotify/search?title=${encodeURIComponent(yt.title)}`);
+      }
+
       let spotifyTracks: SpotifyTrack[] = [];
 
       if (spRes.ok) {
         const d = await spRes.json();
         spotifyTracks = d.tracks ?? [];
       } else if (spRes.status === 429) {
-        setSpotifyError(`Spotify zablokował zapytania (rate limit) po ${i} utworach. Poczekaj chwilę i ponów wyszukiwanie.`);
-        // Save partial results and stop
+        setSpotifyError(`Spotify nadal blokuje zapytania po ${i} utworach. Poczekaj kilka minut i ponów wyszukiwanie.`);
         for (let j = i; j < ytItems.length; j++) {
           matched.push({ ytTitle: ytItems[j].title, ytThumbnail: ytItems[j].thumbnail, videoId: ytItems[j].videoId, spotifyTracks: [], selectedTrack: null });
         }
@@ -454,9 +469,13 @@ export default function ConvertClient() {
       <div>
         <StepIndicator stage={stage} />
         <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800 text-center">
-          <div className="mb-4 text-gray-300">
-            Wyszukiwanie na Spotify: {progress} / {ytItems.length}
-          </div>
+          {spotifyError ? (
+            <div className="mb-4 text-yellow-400 text-sm">{spotifyError}</div>
+          ) : (
+            <div className="mb-4 text-gray-300">
+              Wyszukiwanie na Spotify: {progress} / {ytItems.length}
+            </div>
+          )}
           <div className="w-full bg-gray-700 rounded-full h-2">
             <div className="bg-green-500 h-2 rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
           </div>

@@ -39,7 +39,11 @@ export async function GET(request: NextRequest) {
   });
 
   if (!res.ok) {
-    return NextResponse.json({ error: "Spotify API error" }, { status: res.status });
+    const retryAfter = res.headers.get("Retry-After");
+    return NextResponse.json(
+      { error: "Spotify API error", retryAfter: retryAfter ? parseInt(retryAfter) : null },
+      { status: res.status }
+    );
   }
 
   const data = await res.json();
