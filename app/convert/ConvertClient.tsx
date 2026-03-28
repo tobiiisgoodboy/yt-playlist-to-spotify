@@ -775,18 +775,28 @@ export default function ConvertClient() {
                           <div className="text-sm text-white truncate">{track.name}</div>
                           <div className="text-xs text-gray-400 truncate">{track.artist} · {track.album}</div>
                         </button>
-                        {track.previewUrl && (
-                        <button
-                          onClick={() => playPreview(track.previewUrl!)}
-                          title="Odtwórz 30s"
-                          className={`flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
-                            isPlaying
-                              ? "bg-green-500 text-black"
-                              : "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                          }`}
-                        >
-                          {isPlaying ? <FaPause className="text-xs" /> : <FaPlay className="text-xs" />}
-                        </button>
+                        {track.previewUrl ? (
+                          <button
+                            onClick={() => playPreview(track.previewUrl!)}
+                            title="Odtwórz 30s"
+                            className={`flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
+                              isPlaying
+                                ? "bg-green-500 text-black"
+                                : "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                            }`}
+                          >
+                            {isPlaying ? <FaPause className="text-xs" /> : <FaPlay className="text-xs" />}
+                          </button>
+                        ) : (
+                          <a
+                            href={track.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Otwórz w Spotify"
+                            className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-gray-700 hover:bg-green-600 text-gray-400 hover:text-white transition-colors"
+                          >
+                            <FaSpotify className="text-xs" />
+                          </a>
                         )}
                         {isSelected && <FaCheck className="text-green-500 flex-shrink-0" />}
                       </div>
