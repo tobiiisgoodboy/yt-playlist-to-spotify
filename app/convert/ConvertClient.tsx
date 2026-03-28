@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FaYoutube, FaCheck, FaTimes, FaSpotify, FaPlay, FaPause, FaHeadphones } from "react-icons/fa";
 
 type SpotifyTrack = {
@@ -148,6 +148,43 @@ export default function ConvertClient() {
   const [existingPlaylists, setExistingPlaylists] = useState<SpotifyPlaylist[]>([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState("");
   const [loadingPlaylists, setLoadingPlaylists] = useState(false);
+
+  const STORAGE_KEY = "yt_spotify_resume";
+
+  // Restore state after Spotify OAuth redirect (reconnect flow)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      localStorage.removeItem(STORAGE_KEY);
+      const saved = JSON.parse(raw) as {
+        items: MatchedItem[];
+        ytItems: YtItem[];
+        url: string;
+        savedAt: number;
+      };
+      // Ignore if saved more than 2 hours ago
+      if (Date.now() - saved.savedAt > 2 * 60 * 60 * 1000) return;
+      setItems(saved.items);
+      setYtItems(saved.ytItems);
+      setUrl(saved.url);
+      const defaultName = `YT Import ${new Date().toLocaleDateString("pl-PL")}`;
+      setPlaylistName(defaultName);
+      setStage("export-setup");
+      setLoadingPlaylists(true);
+      fetch("/api/spotify/playlists").then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          setExistingPlaylists(data.playlists ?? []);
+          if (data.playlists?.length > 0) setSelectedPlaylistId(data.playlists[0].id);
+        }
+        setLoadingPlaylists(false);
+      });
+    } catch {
+      // ignore storage errors
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const selectedCount = items.filter((i) => i.selectedTrack).length;
   const foundCount = items.filter((i) => i.spotifyTracks.length > 0).length;
@@ -615,14 +652,24 @@ export default function ConvertClient() {
           {needsReconnect && (
             <div className="mb-4 p-4 bg-yellow-900/40 border border-yellow-700 rounded-xl">
               <p className="text-yellow-300 text-sm font-medium mb-3">
-                Token Spotify nie ma uprawnień do tworzenia playlist. Połącz Spotify ponownie (zajmie kilka sekund).
+                Token Spotify nie ma uprawnień do tworzenia playlist. Połącz ponownie — wyniki wyszukiwania zostaną zachowane.
               </p>
-              <a
-                href="/api/spotify/reconnect"
-                className="inline-block bg-green-500 text-black font-semibold px-4 py-2 rounded-lg text-sm hover:bg-green-400 transition-colors"
+              <button
+                onClick={() => {
+                  try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                      items,
+                      ytItems,
+                      url,
+                      savedAt: Date.now(),
+                    }));
+                  } catch { /* ignore */ }
+                  window.location.href = "/api/spotify/reconnect";
+                }}
+                className="bg-green-500 text-black font-semibold px-4 py-2 rounded-lg text-sm hover:bg-green-400 transition-colors cursor-pointer"
               >
                 Połącz Spotify ponownie
-              </a>
+              </button>
             </div>
           )}
 
