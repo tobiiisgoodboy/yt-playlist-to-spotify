@@ -31,10 +31,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/?spotify_error=1", request.url));
   }
 
-  const { access_token, refresh_token, expires_in } =
+  const { access_token, refresh_token, expires_in, scope } =
     await tokenRes.json();
 
   const response = NextResponse.redirect(new URL("/convert", request.url));
+
+  // Temporary diagnostic: store granted scopes in readable cookie
+  response.cookies.set("spotify_granted_scopes", scope ?? "", {
+    secure: true,
+    maxAge: expires_in,
+    path: "/",
+  });
 
   response.cookies.set("spotify_access_token", access_token, {
     httpOnly: true,

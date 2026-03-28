@@ -15,6 +15,7 @@ async function spotifyFetch(url: string, token: string, options?: RequestInit) {
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const token = cookieStore.get("spotify_access_token")?.value;
+  const grantedScopes = cookieStore.get("spotify_granted_scopes")?.value ?? "(brak danych)";
 
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
       const body = await addRes.json().catch(() => ({})) as { error?: { message?: string } };
       const msg = body?.error?.message ?? "brak szczegolów";
       return NextResponse.json(
-        { error: `[${addRes.status}] Blad dodawania utworów do playlisty: ${msg}` },
+        { error: `[${addRes.status}] ${msg} | scopes: ${grantedScopes}` },
         { status: 500 }
       );
     }
