@@ -20,8 +20,10 @@ export async function GET() {
     `https://accounts.spotify.com/authorize?${loginParams.toString()}`
   );
 
-  response.cookies.delete("spotify_access_token");
-  response.cookies.delete("spotify_refresh_token");
+  // Must match original cookie flags (httpOnly + secure) so the browser actually deletes them
+  const cookieOpts = { httpOnly: true, secure: true, path: "/", maxAge: 0 } as const;
+  response.cookies.set("spotify_access_token", "", cookieOpts);
+  response.cookies.set("spotify_refresh_token", "", cookieOpts);
 
   return response;
 }
