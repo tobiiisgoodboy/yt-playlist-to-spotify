@@ -31,14 +31,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/?spotify_error=1", request.url));
   }
 
-  const { access_token, refresh_token, expires_in, scope } =
-    await tokenRes.json();
+  const tokenData = await tokenRes.json();
+  const { access_token, refresh_token, expires_in } = tokenData;
+  const scope: string = tokenData.scope ?? "";
 
-  const response = NextResponse.redirect(new URL("/convert", request.url));
+  // Temporary diagnostic: pass scope in redirect URL so it's visible in browser
+  const redirectUrl = new URL("/convert", request.url);
+  redirectUrl.searchParams.set("debug_scope", scope || "EMPTY");
+  const response = NextResponse.redirect(redirectUrl);
 
-  // Temporary diagnostic: store granted scopes in readable cookie
-  response.cookies.set("spotify_granted_scopes", scope ?? "", {
+  response.cookies.set("spotify_granted_scopes", scope, {
     secure: true,
+    sameSite: "lax",
     maxAge: expires_in,
     path: "/",
   });
