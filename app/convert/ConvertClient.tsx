@@ -136,6 +136,7 @@ export default function ConvertClient() {
   const [page, setPage] = useState(1);
   const [showAll, setShowAll] = useState(false);
   const [playingUrl, setPlayingUrl] = useState<string | null>(null);
+  const [embedTrackId, setEmbedTrackId] = useState<string | null>(null);
   const [authExpired, setAuthExpired] = useState(false);
   const [spotifyError, setSpotifyError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -757,48 +758,62 @@ export default function ConvertClient() {
                   {item.spotifyTracks.map((track) => {
                     const isSelected = item.selectedTrack?.id === track.id;
                     const isPlaying = playingUrl === track.previewUrl;
+                    const isEmbedOpen = embedTrackId === track.id;
                     return (
-                      <div
-                        key={track.id}
-                        className={`w-full flex items-center gap-3 p-2 rounded-lg border transition-colors ${
-                          isSelected ? "border-green-500 bg-green-500/10" : "border-gray-700 hover:border-gray-500"
-                        }`}
-                      >
-                        {track.image && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={track.image} alt="" className="w-10 h-10 rounded flex-shrink-0" />
-                        )}
-                        <button
-                          onClick={() => toggleSelect(globalIndex, track)}
-                          className="flex-1 min-w-0 text-left cursor-pointer"
+                      <div key={track.id}>
+                        <div
+                          className={`w-full flex items-center gap-3 p-2 rounded-lg border transition-colors ${
+                            isSelected ? "border-green-500 bg-green-500/10" : "border-gray-700 hover:border-gray-500"
+                          }`}
                         >
-                          <div className="text-sm text-white truncate">{track.name}</div>
-                          <div className="text-xs text-gray-400 truncate">{track.artist} · {track.album}</div>
-                        </button>
-                        {track.previewUrl ? (
+                          {track.image && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={track.image} alt="" className="w-10 h-10 rounded flex-shrink-0" />
+                          )}
                           <button
-                            onClick={() => playPreview(track.previewUrl!)}
-                            title="Odtwórz 30s"
-                            className={`flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
-                              isPlaying
-                                ? "bg-green-500 text-black"
-                                : "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                            }`}
+                            onClick={() => toggleSelect(globalIndex, track)}
+                            className="flex-1 min-w-0 text-left cursor-pointer"
                           >
-                            {isPlaying ? <FaPause className="text-xs" /> : <FaPlay className="text-xs" />}
+                            <div className="text-sm text-white truncate">{track.name}</div>
+                            <div className="text-xs text-gray-400 truncate">{track.artist} · {track.album}</div>
                           </button>
-                        ) : (
-                          <a
-                            href={track.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Otwórz w Spotify"
-                            className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-gray-700 hover:bg-green-600 text-gray-400 hover:text-white transition-colors"
-                          >
-                            <FaSpotify className="text-xs" />
-                          </a>
+                          {track.previewUrl ? (
+                            <button
+                              onClick={() => playPreview(track.previewUrl!)}
+                              title="Odtwórz 30s"
+                              className={`flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
+                                isPlaying
+                                  ? "bg-green-500 text-black"
+                                  : "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                              }`}
+                            >
+                              {isPlaying ? <FaPause className="text-xs" /> : <FaPlay className="text-xs" />}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setEmbedTrackId(isEmbedOpen ? null : track.id)}
+                              title={isEmbedOpen ? "Zamknij odtwarzacz" : "Odtwórz w przeglądarce"}
+                              className={`flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
+                                isEmbedOpen
+                                  ? "bg-green-500 text-black"
+                                  : "bg-gray-700 hover:bg-green-600 text-gray-400 hover:text-white"
+                              }`}
+                            >
+                              <FaSpotify className="text-xs" />
+                            </button>
+                          )}
+                          {isSelected && <FaCheck className="text-green-500 flex-shrink-0" />}
+                        </div>
+                        {isEmbedOpen && (
+                          <iframe
+                            src={`https://open.spotify.com/embed/track/${track.id}?utm_source=generator`}
+                            width="100%"
+                            height="80"
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            loading="lazy"
+                            className="rounded-lg mt-1"
+                          />
                         )}
-                        {isSelected && <FaCheck className="text-green-500 flex-shrink-0" />}
                       </div>
                     );
                   })}
