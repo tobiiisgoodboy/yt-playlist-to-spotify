@@ -66,16 +66,22 @@ export async function POST(request: NextRequest) {
       }
     );
     if (!createRes.ok) {
-      if (createRes.status === 403) {
-        return NextResponse.json(
-          { error: "Brak uprawnien do tworzenia playlist. Polacz Spotify ponownie.", reconnect: true },
-          { status: 403 }
-        );
-      }
-      const body = await createRes.json().catch(() => ({})) as { error?: { message?: string } };
+      const body = await createRes.json().catch(() => ({})) as { error?: { status?: number; message?: string } };
+      const spotifyMsg = body?.error?.message ?? "(brak wiadomosci)";
+      const isPermission = createRes.status === 403;
       return NextResponse.json(
-        { error: `Nie można utworzyć playlisty: ${body?.error?.message ?? createRes.status}` },
-        { status: 500 }
+        {
+          error: isPermission
+            ? `Brak uprawnien (403): ${spotifyMsg}`
+            : `Nie mozna utworzyc playlisty (${createRes.status}): ${spotifyMsg}`,
+          reconnect: isPermission,
+          // diagnostic: first 12 chars of token in use
+          tokenStart: token.slice(0, 12),
+          userId: me.id,
+          spotifyStatus: createRes.status,
+          spotifyBody: body,
+        },
+        { status: isPermission ? 403 : 500 }
       );
     }
     const created = await createRes.json();
