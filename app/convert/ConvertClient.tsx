@@ -148,6 +148,7 @@ export default function ConvertClient() {
   const [existingPlaylists, setExistingPlaylists] = useState<SpotifyPlaylist[]>([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState("");
   const [loadingPlaylists, setLoadingPlaylists] = useState(false);
+  const [reconnectSuccess, setReconnectSuccess] = useState(false);
 
   const STORAGE_KEY = "yt_spotify_resume";
 
@@ -171,6 +172,7 @@ export default function ConvertClient() {
       const defaultName = `YT Import ${new Date().toLocaleDateString("pl-PL")}`;
       setPlaylistName(defaultName);
       setStage("export-setup");
+      setReconnectSuccess(true);
       setLoadingPlaylists(true);
       fetch("/api/spotify/playlists").then(async (res) => {
         if (res.ok) {
@@ -646,6 +648,12 @@ export default function ConvertClient() {
                   )}
                 </>
               )}
+            </div>
+          )}
+
+          {reconnectSuccess && (
+            <div className="mb-4 p-3 bg-green-900/40 border border-green-700 rounded-xl text-green-300 text-sm">
+              Spotify połączono ponownie. Możesz teraz eksportować playlistę.
             </div>
           )}
 

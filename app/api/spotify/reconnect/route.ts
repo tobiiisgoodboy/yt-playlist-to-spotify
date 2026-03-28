@@ -12,6 +12,8 @@ export async function GET() {
       "playlist-modify-public",
       "playlist-modify-private",
     ].join(" "),
+    // Force Spotify to show the consent screen so user grants the new scopes
+    show_dialog: "true",
   });
 
   const response = NextResponse.redirect(
