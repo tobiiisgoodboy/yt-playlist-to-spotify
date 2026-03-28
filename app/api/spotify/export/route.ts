@@ -33,7 +33,11 @@ export async function POST(request: NextRequest) {
     targetPlaylistId = playlistId;
     const infoRes = await spotifyFetch(`https://api.spotify.com/v1/playlists/${playlistId}`, token);
     if (!infoRes.ok) {
-      return NextResponse.json({ error: "Failed to get playlist info" }, { status: 500 });
+      const body = await infoRes.json().catch(() => ({})) as { error?: { message?: string } };
+      return NextResponse.json(
+        { error: `Nie można pobrać playlisty: ${body?.error?.message ?? infoRes.status}` },
+        { status: 500 }
+      );
     }
     const info = await infoRes.json();
     playlistUrl = info.external_urls.spotify;
@@ -41,7 +45,11 @@ export async function POST(request: NextRequest) {
     // Create new playlist
     const meRes = await spotifyFetch("https://api.spotify.com/v1/me", token);
     if (!meRes.ok) {
-      return NextResponse.json({ error: "Failed to get Spotify user" }, { status: 500 });
+      const body = await meRes.json().catch(() => ({})) as { error?: { message?: string } };
+      return NextResponse.json(
+        { error: `Nie można pobrać profilu Spotify: ${body?.error?.message ?? meRes.status}` },
+        { status: 500 }
+      );
     }
     const me = await meRes.json();
 
@@ -58,7 +66,11 @@ export async function POST(request: NextRequest) {
       }
     );
     if (!createRes.ok) {
-      return NextResponse.json({ error: "Failed to create playlist" }, { status: 500 });
+      const body = await createRes.json().catch(() => ({})) as { error?: { message?: string } };
+      return NextResponse.json(
+        { error: `Nie można utworzyć playlisty: ${body?.error?.message ?? createRes.status}` },
+        { status: 500 }
+      );
     }
     const created = await createRes.json();
     targetPlaylistId = created.id;
