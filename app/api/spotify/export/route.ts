@@ -66,6 +66,12 @@ export async function POST(request: NextRequest) {
       }
     );
     if (!createRes.ok) {
+      if (createRes.status === 403) {
+        return NextResponse.json(
+          { error: "Brak uprawnien do tworzenia playlist. Polacz Spotify ponownie.", reconnect: true },
+          { status: 403 }
+        );
+      }
       const body = await createRes.json().catch(() => ({})) as { error?: { message?: string } };
       return NextResponse.json(
         { error: `Nie można utworzyć playlisty: ${body?.error?.message ?? createRes.status}` },

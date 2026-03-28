@@ -139,6 +139,7 @@ export default function ConvertClient() {
   const [embedTrackId, setEmbedTrackId] = useState<string | null>(null);
   const [authExpired, setAuthExpired] = useState(false);
   const [spotifyError, setSpotifyError] = useState<string | null>(null);
+  const [needsReconnect, setNeedsReconnect] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Krok 4 state
@@ -357,8 +358,9 @@ export default function ConvertClient() {
       });
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({})) as { error?: string };
+        const errData = await res.json().catch(() => ({})) as { error?: string; reconnect?: boolean };
         setError(errData.error ?? "Blad eksportu do Spotify");
+        if (errData.reconnect) setNeedsReconnect(true);
         setStage("export-setup");
         return;
       }
@@ -610,7 +612,21 @@ export default function ConvertClient() {
             </div>
           )}
 
-          {error && (
+          {needsReconnect && (
+            <div className="mb-4 p-4 bg-yellow-900/40 border border-yellow-700 rounded-xl">
+              <p className="text-yellow-300 text-sm font-medium mb-3">
+                Token Spotify nie ma uprawnień do tworzenia playlist. Połącz Spotify ponownie (zajmie kilka sekund).
+              </p>
+              <a
+                href="/api/spotify/reconnect"
+                className="inline-block bg-green-500 text-black font-semibold px-4 py-2 rounded-lg text-sm hover:bg-green-400 transition-colors"
+              >
+                Połącz Spotify ponownie
+              </a>
+            </div>
+          )}
+
+          {error && !needsReconnect && (
             <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-xl text-red-300 text-sm">{error}</div>
           )}
 
