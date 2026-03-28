@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { FaYoutube, FaCheck, FaTimes, FaSpotify, FaPlay, FaPause } from "react-icons/fa";
+import { FaYoutube, FaCheck, FaTimes, FaSpotify, FaPlay, FaPause, FaHeadphones } from "react-icons/fa";
 
 type SpotifyTrack = {
   id: string;
@@ -792,14 +792,15 @@ export default function ConvertClient() {
                           ) : (
                             <button
                               onClick={() => setEmbedTrackId(isEmbedOpen ? null : track.id)}
-                              title={isEmbedOpen ? "Zamknij odtwarzacz" : "Odtwórz w przeglądarce"}
-                              className={`flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
+                              title={isEmbedOpen ? "Zamknij próbkę" : "Odtwórz próbkę dźwięku"}
+                              className={`flex-shrink-0 flex items-center gap-1 px-2 h-7 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                                 isEmbedOpen
                                   ? "bg-green-500 text-black"
-                                  : "bg-gray-700 hover:bg-green-600 text-gray-400 hover:text-white"
+                                  : "bg-gray-700 hover:bg-gray-600 text-gray-300"
                               }`}
                             >
-                              <FaSpotify className="text-xs" />
+                              <FaHeadphones className="text-xs" />
+                              <span>Próbka</span>
                             </button>
                           )}
                           {isSelected && <FaCheck className="text-green-500 flex-shrink-0" />}
