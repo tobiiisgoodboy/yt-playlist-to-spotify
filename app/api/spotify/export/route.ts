@@ -67,19 +67,12 @@ export async function POST(request: NextRequest) {
     );
     if (!createRes.ok) {
       const body = await createRes.json().catch(() => ({})) as { error?: { status?: number; message?: string } };
-      const spotifyMsg = body?.error?.message ?? "(brak wiadomosci)";
+      const spotifyMsg = body?.error?.message ?? "brak szczegolów";
       const isPermission = createRes.status === 403;
       return NextResponse.json(
         {
-          error: isPermission
-            ? `Brak uprawnien (403): ${spotifyMsg}`
-            : `Nie mozna utworzyc playlisty (${createRes.status}): ${spotifyMsg}`,
+          error: `[${createRes.status}] ${spotifyMsg} | token: ${token.slice(0, 8)}... | user: ${me.id}`,
           reconnect: isPermission,
-          // diagnostic: first 12 chars of token in use
-          tokenStart: token.slice(0, 12),
-          userId: me.id,
-          spotifyStatus: createRes.status,
-          spotifyBody: body,
         },
         { status: isPermission ? 403 : 500 }
       );
