@@ -58,10 +58,7 @@ export async function POST(request: NextRequest) {
       token,
       {
         method: "POST",
-        body: JSON.stringify({
-          name: playlistName ?? "YT Import",
-          public: true,
-        }),
+        body: JSON.stringify({ name: playlistName ?? "YT Import" }),
       }
     );
     if (!createRes.ok) {
@@ -84,7 +81,7 @@ export async function POST(request: NextRequest) {
   // Add tracks in batches of 100 (Spotify limit)
   for (let i = 0; i < uris.length; i += 100) {
     const batch = uris.slice(i, i + 100);
-    await spotifyFetch(
+    const addRes = await spotifyFetch(
       `https://api.spotify.com/v1/playlists/${targetPlaylistId}/tracks`,
       token,
       {
@@ -92,6 +89,14 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({ uris: batch }),
       }
     );
+    if (!addRes.ok) {
+      const body = await addRes.json().catch(() => ({})) as { error?: { message?: string } };
+      const msg = body?.error?.message ?? "brak szczegolów";
+      return NextResponse.json(
+        { error: `[${addRes.status}] Blad dodawania utworów do playlisty: ${msg}` },
+        { status: 500 }
+      );
+    }
   }
 
   return NextResponse.json({ playlistUrl });
