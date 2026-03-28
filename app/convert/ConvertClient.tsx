@@ -681,7 +681,7 @@ export default function ConvertClient() {
             </div>
           )}
 
-          {error && !needsReconnect && (
+          {error && (
             <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-xl text-red-300 text-sm">{error}</div>
           )}
 
