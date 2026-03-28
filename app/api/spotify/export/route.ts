@@ -60,8 +60,7 @@ export async function POST(request: NextRequest) {
         method: "POST",
         body: JSON.stringify({
           name: playlistName ?? "YT Import",
-          public: false,
-          description: "Imported from YouTube via YT Playlist to Spotify",
+          public: true,
         }),
       }
     );
